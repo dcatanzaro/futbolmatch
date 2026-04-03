@@ -16,8 +16,13 @@ const payloadSchema = z.object({
 });
 
 function getIp(request: Request) {
+  const cfConnectingIp = request.headers.get("cf-connecting-ip");
   const forwarded = request.headers.get("x-forwarded-for");
   const realIp = request.headers.get("x-real-ip");
+
+  if (cfConnectingIp) {
+    return cfConnectingIp.trim();
+  }
 
   if (forwarded) {
     return forwarded.split(",")[0]?.trim() || null;
