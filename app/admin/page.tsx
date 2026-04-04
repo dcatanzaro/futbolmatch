@@ -237,7 +237,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
         <section className="rounded-[2rem] border border-white/10 bg-white p-6 shadow-xl">
           <h2 className="text-lg font-semibold text-zinc-950">Armado de equipos</h2>
           <p className="mt-2 text-sm text-zinc-600">
-            Selecciona los presentes y se calculan las 3 mejores particiones segun ataque, defensa y overall del ranking hibrido.
+            Selecciona los presentes y se calculan las 3 mejores particiones segun ataque, defensa y overall. Puedes incluir o no el ranking hibrido.
           </p>
           <div className="mt-6">
             <BalancePlanner rankings={rankings} />

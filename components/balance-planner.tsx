@@ -5,12 +5,17 @@ import { useMemo, useState } from "react";
 import { generateBalancedTeams } from "@/lib/balance";
 import type { PlayerRanking } from "@/lib/ranking";
 
+function round(value: number) {
+  return Number(value.toFixed(2));
+}
+
 type BalancePlannerProps = {
   rankings: PlayerRanking[];
 };
 
 export function BalancePlanner({ rankings }: BalancePlannerProps) {
   const [selectedIds, setSelectedIds] = useState<number[]>(rankings.map((player) => player.id));
+  const [includeHybridRanking, setIncludeHybridRanking] = useState(true);
 
   function togglePlayer(id: number) {
     setSelectedIds((current) =>
@@ -23,7 +28,26 @@ export function BalancePlanner({ rankings }: BalancePlannerProps) {
     [rankings, selectedIds],
   );
 
-  const suggestions = useMemo(() => generateBalancedTeams(selectedPlayers, 3), [selectedPlayers]);
+  const plannerPlayers = useMemo(
+    () =>
+      selectedPlayers.map((player) => {
+        if (includeHybridRanking) {
+          return player;
+        }
+
+        const overall = round((player.peerAttack + player.peerDefense) / 2);
+
+        return {
+          ...player,
+          finalAttack: player.peerAttack,
+          finalDefense: player.peerDefense,
+          overall,
+        };
+      }),
+    [includeHybridRanking, selectedPlayers],
+  );
+
+  const suggestions = useMemo(() => generateBalancedTeams(plannerPlayers, 3), [plannerPlayers]);
   const canGenerate = selectedPlayers.length >= 2;
 
   return (
@@ -43,9 +67,26 @@ export function BalancePlanner({ rankings }: BalancePlannerProps) {
           </div>
         </div>
 
+        <label className="mt-5 flex items-center justify-between gap-4 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700">
+          <div>
+            <p className="font-medium text-zinc-950">Incluir ranking hibrido</p>
+            <p className="text-xs text-zinc-500">
+              Si lo apagas, el armado usa solo puntajes de ataque y defensa votados.
+            </p>
+          </div>
+          <input
+            type="checkbox"
+            checked={includeHybridRanking}
+            onChange={() => setIncludeHybridRanking((current) => !current)}
+            className="h-4 w-4 accent-emerald-500"
+          />
+        </label>
+
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           {rankings.map((player) => {
             const checked = selectedIds.includes(player.id);
+            const attack = includeHybridRanking ? player.finalAttack : player.peerAttack;
+            const defense = includeHybridRanking ? player.finalDefense : player.peerDefense;
 
             return (
               <label
@@ -59,7 +100,7 @@ export function BalancePlanner({ rankings }: BalancePlannerProps) {
                 <div>
                   <p className="font-medium">{player.name}</p>
                   <p className={`text-xs ${checked ? "text-zinc-300" : "text-zinc-500"}`}>
-                    A {player.finalAttack} | D {player.finalDefense}
+                    A {attack} | D {defense}
                   </p>
                 </div>
                 <input
