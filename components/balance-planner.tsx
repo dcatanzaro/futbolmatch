@@ -16,6 +16,7 @@ type BalancePlannerProps = {
 export function BalancePlanner({ rankings }: BalancePlannerProps) {
   const [selectedIds, setSelectedIds] = useState<number[]>(rankings.map((player) => player.id));
   const [includeHybridRanking, setIncludeHybridRanking] = useState(true);
+  const [showScores, setShowScores] = useState(true);
 
   function togglePlayer(id: number) {
     setSelectedIds((current) =>
@@ -82,6 +83,21 @@ export function BalancePlanner({ rankings }: BalancePlannerProps) {
           />
         </label>
 
+        <label className="mt-3 flex items-center justify-between gap-4 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700">
+          <div>
+            <p className="font-medium text-zinc-950">Mostrar puntajes</p>
+            <p className="text-xs text-zinc-500">
+              Oculta o muestra los valores al lado de cada jugador sin afectar el calculo.
+            </p>
+          </div>
+          <input
+            type="checkbox"
+            checked={showScores}
+            onChange={() => setShowScores((current) => !current)}
+            className="h-4 w-4 accent-emerald-500"
+          />
+        </label>
+
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           {rankings.map((player) => {
             const checked = selectedIds.includes(player.id);
@@ -96,15 +112,17 @@ export function BalancePlanner({ rankings }: BalancePlannerProps) {
                     ? "border-zinc-950 bg-zinc-950 text-white"
                     : "border-zinc-200 bg-white text-zinc-900"
                 }`}
-              >
-                <div>
-                  <p className="font-medium">{player.name}</p>
-                  <p className={`text-xs ${checked ? "text-zinc-300" : "text-zinc-500"}`}>
-                    A {attack} | D {defense}
-                  </p>
-                </div>
-                <input
-                  type="checkbox"
+                >
+                  <div>
+                    <p className="font-medium">{player.name}</p>
+                    {showScores ? (
+                      <p className={`text-xs ${checked ? "text-zinc-300" : "text-zinc-500"}`}>
+                        A {attack} | D {defense}
+                      </p>
+                    ) : null}
+                  </div>
+                  <input
+                    type="checkbox"
                   checked={checked}
                   onChange={() => togglePlayer(player.id)}
                   className="h-4 w-4 accent-emerald-500"
@@ -140,7 +158,7 @@ export function BalancePlanner({ rankings }: BalancePlannerProps) {
                       {suggestion.teamBlack.map((player) => (
                         <div key={player.id} className="flex items-center justify-between">
                           <span>{player.name}</span>
-                          <span className="text-zinc-500">{player.overall}</span>
+                          {showScores ? <span className="text-zinc-500">{player.overall}</span> : null}
                         </div>
                       ))}
                     </div>
@@ -151,7 +169,7 @@ export function BalancePlanner({ rankings }: BalancePlannerProps) {
                       {suggestion.teamWhite.map((player) => (
                         <div key={player.id} className="flex items-center justify-between">
                           <span>{player.name}</span>
-                          <span className="text-zinc-500">{player.overall}</span>
+                          {showScores ? <span className="text-zinc-500">{player.overall}</span> : null}
                         </div>
                       ))}
                     </div>
