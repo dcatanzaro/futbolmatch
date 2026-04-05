@@ -15,16 +15,30 @@ export type SuggestedTeams = {
   teamWhite: BalancedPlayer[];
 };
 
+export type TeamTotals = {
+  attack: number;
+  defense: number;
+  overall: number;
+};
+
 function sumTeam(players: BalancedPlayer[], field: keyof BalancedPlayer) {
   return players.reduce((total, player) => total + Number(player[field]), 0);
 }
 
+export function getTeamTotals(players: BalancedPlayer[]): TeamTotals {
+  return {
+    attack: Number(sumTeam(players, "finalAttack").toFixed(3)),
+    defense: Number(sumTeam(players, "finalDefense").toFixed(3)),
+    overall: Number(sumTeam(players, "overall").toFixed(3)),
+  };
+}
+
 function buildSuggestion(teamBlack: BalancedPlayer[], teamWhite: BalancedPlayer[]): SuggestedTeams {
-  const attackDiff = Math.abs(sumTeam(teamBlack, "finalAttack") - sumTeam(teamWhite, "finalAttack"));
-  const defenseDiff = Math.abs(
-    sumTeam(teamBlack, "finalDefense") - sumTeam(teamWhite, "finalDefense"),
-  );
-  const overallDiff = Math.abs(sumTeam(teamBlack, "overall") - sumTeam(teamWhite, "overall"));
+  const blackTotals = getTeamTotals(teamBlack);
+  const whiteTotals = getTeamTotals(teamWhite);
+  const attackDiff = Math.abs(blackTotals.attack - whiteTotals.attack);
+  const defenseDiff = Math.abs(blackTotals.defense - whiteTotals.defense);
+  const overallDiff = Math.abs(blackTotals.overall - whiteTotals.overall);
   const objective = attackDiff * 0.4 + defenseDiff * 0.4 + overallDiff * 0.2;
 
   return {
@@ -35,6 +49,10 @@ function buildSuggestion(teamBlack: BalancedPlayer[], teamWhite: BalancedPlayer[
     teamBlack: [...teamBlack].sort((a, b) => a.name.localeCompare(b.name)),
     teamWhite: [...teamWhite].sort((a, b) => a.name.localeCompare(b.name)),
   };
+}
+
+export function evaluateTeams(teamBlack: BalancedPlayer[], teamWhite: BalancedPlayer[]) {
+  return buildSuggestion(teamBlack, teamWhite);
 }
 
 export function generateBalancedTeams(players: BalancedPlayer[], limit = 3) {
